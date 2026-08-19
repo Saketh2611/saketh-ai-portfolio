@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-ink-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink text-paper font-body antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  /* Visible keyboard focus everywhere — never suppressed, only restyled
+     to match the palette instead of the browser default blue ring. */
+  :focus-visible {
+    outline: 2px solid theme("colors.signal.gold");
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: theme("colors.signal.gold");
+    color: theme("colors.ink.DEFAULT");
+  }
+
+  /* Thin, unobtrusive scrollbar matching the dark surface — default
+     scrollbars read as visibly un-designed against this palette. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: theme("colors.ink.DEFAULT");
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.ink.border");
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.paper.faint");
+  }
+}
+
+@layer utilities {
+  /* Reusable "eyebrow" label style — the mono section tags that mirror
+     the actual source_type values in the chunks table (source:project,
+     source:experience, etc). Structural device tied to real content. */
+  .eyebrow {
+    @apply font-mono text-xs tracking-widest uppercase text-signal-teal;
+  }
+
+  .eyebrow::before {
+    content: "── ";
+    color: theme("colors.ink.border");
+  }
+}
+
+/* Respect reduced-motion preference: kill the typewriter/blink/slide
+   animations for anyone who's asked the OS not to move things around. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
