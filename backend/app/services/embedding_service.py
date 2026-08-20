@@ -1,10 +1,15 @@
 """
-Embedding service — wraps BGE-M3 (sentence-transformers).
+Embedding service — wraps bge-small-en-v1.5 (sentence-transformers).
+
+Swapped from BGE-M3 (1024-dim, ~2GB) to bge-small-en-v1.5 (384-dim,
+~130MB) specifically to fit free-tier hosting RAM limits (Render free
+tier: 512MB). Retrieval quality is somewhat lower than BGE-M3, but
+this app's scale (single-digit to low-hundreds of chunks) doesn't need
+BGE-M3's extra capacity to work well.
 
 The model is loaded once as a module-level singleton, not per-request.
-Loading BGE-M3 takes a few seconds; doing that on every /chat call would
-make the endpoint unusably slow. FastAPI's startup event triggers the
-first load so the first real request isn't the one paying that cost.
+FastAPI's startup event triggers the first load so the first real
+request isn't the one paying that cost.
 """
 
 import logging

@@ -82,6 +82,7 @@ async def chat(payload: ChatRequest, request: Request, db: AsyncSession = Depend
     """
     chunks = await retrieve_relevant_chunks(db, payload.query)
     answer = await generate_answer(payload.query, chunks)
+    logger.info("Chat query: %s, retrieved %d chunks", payload.query, len(chunks))
 
     sources: list[ChatSource] = []
     seen_titles: set[str] = set()
@@ -115,4 +116,5 @@ async def chat(payload: ChatRequest, request: Request, db: AsyncSession = Depend
         logger.exception("Failed to write chat_log entry")
         await db.rollback()
 
+    logger.info("Chat response: %s", answer)
     return ChatResponse(answer=answer, sources=sources)
