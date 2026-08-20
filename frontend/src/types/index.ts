@@ -13,6 +13,7 @@ export interface Profile {
   linkedin_url: string | null;
   phone: string | null;
   location: string | null;
+  visible_summary: string;
 }
 
 export interface ProfileUpdate {
@@ -24,6 +25,7 @@ export interface ProfileUpdate {
   linkedin_url?: string;
   phone?: string;
   location?: string;
+  visible_summary?: string;
 }
 
 export interface Project {

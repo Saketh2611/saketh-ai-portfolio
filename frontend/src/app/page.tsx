@@ -58,9 +58,9 @@ export default function HomePage() {
         <section id="about" className="flex flex-col gap-10 py-16 sm:py-24">
           <IdentityStrip profile={profile} />
 
-          {profile.summary && (
+          {profile.visible_summary && (
             <p className="max-w-2xl text-sm leading-relaxed text-paper-muted">
-              {profile.summary}
+              {profile.visible_summary}
             </p>
           )}
 

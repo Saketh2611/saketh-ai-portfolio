@@ -28,6 +28,7 @@ class ProfileOut(BaseModel):
     linkedin_url: str | None
     phone: str | None
     location: str | None
+    visible_summary: str
 
 
 class ProfileUpdate(BaseModel):

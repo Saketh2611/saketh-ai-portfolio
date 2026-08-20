@@ -34,6 +34,7 @@ class Profile(Base):
     phone: Mapped[str | None] = mapped_column(Text, nullable=True)
     location: Mapped[str | None] = mapped_column(Text, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
+    visible_summary: Mapped[str] = mapped_column(Text, default="")
 
 
 class Project(Base):
