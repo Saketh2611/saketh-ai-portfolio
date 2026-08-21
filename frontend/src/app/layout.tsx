@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Bebas_Neue, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const bebas = Bebas_Neue({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-space-grotesk",
+  weight: "400",
+  variable: "--font-bebas",
   display: "swap",
 });
 
-const plexSans = IBM_Plex_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-plex-sans",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${bebas.variable} ${inter.variable} ${plexMono.variable}`}>
       <body>{children}</body>
     </html>
   );

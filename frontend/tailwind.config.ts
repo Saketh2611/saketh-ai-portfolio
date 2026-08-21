@@ -6,26 +6,27 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          DEFAULT: "#0B0E14", // page background — blue-tinted black, not void-black
-          surface: "#12151D", // card/panel background
-          raised: "#1A1E29", // hover/active surface
-          border: "#242938", // hairline borders
+          DEFAULT: "#080808",
+          surface: "#121212",
+          raised: "#1A1A1A",
+          border: "#2A2A2A",
         },
         paper: {
-          DEFAULT: "#E8EAED", // primary text — soft off-white, not pure #FFF
-          muted: "#8B92A3", // secondary text — muted slate-blue
-          faint: "#565D70", // tertiary text — timestamps, placeholders
+          DEFAULT: "#FFFFFF",
+          muted: "#C9C9C9",
+          faint: "#7A7A7A",
         },
         signal: {
-          gold: "#F2B84B", // primary accent — CTAs, active states, the query cursor
-          "gold-dim": "#8A6A2C",
-          teal: "#5EEAD4", // secondary accent — citations, retrieval/source tags
-          "teal-dim": "#2C6B62",
+          gold: "#E11D2E",
+          "gold-dim": "#8A1520",
+          teal: "#E11D2E",
+          "teal-dim": "#8A1520",
         },
       },
       fontFamily: {
-        display: ["var(--font-space-grotesk)", "system-ui", "sans-serif"],
-        body: ["var(--font-plex-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-bebas)", "Impact", "system-ui", "sans-serif"],
+        body: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         mono: ["var(--font-plex-mono)", "ui-monospace", "monospace"],
       },
       animation: {

@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     embedding_dim: int = 1024
 
     # --- Rate limiting ---
-    chat_rate_limit_per_minute: int = 10
+    chat_rate_limit_per_minute: int = 5
 
     # --- App ---
     environment: str = "development"

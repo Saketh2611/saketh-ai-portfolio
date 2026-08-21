@@ -15,15 +15,7 @@
     @apply bg-ink text-paper font-body antialiased;
   }
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    @apply font-display;
-  }
 
-  /* Visible keyboard focus everywhere — never suppressed, only restyled
-     to match the palette instead of the browser default blue ring. */
   :focus-visible {
     outline: 2px solid theme("colors.signal.gold");
     outline-offset: 2px;
@@ -32,11 +24,9 @@
 
   ::selection {
     background: theme("colors.signal.gold");
-    color: theme("colors.ink.DEFAULT");
+    color: theme("colors.paper.DEFAULT");
   }
 
-  /* Thin, unobtrusive scrollbar matching the dark surface — default
-     scrollbars read as visibly un-designed against this palette. */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -53,22 +43,35 @@
   }
 }
 
-@layer utilities {
-  /* Reusable "eyebrow" label style — the mono section tags that mirror
-     the actual source_type values in the chunks table (source:project,
-     source:experience, etc). Structural device tied to real content. */
-  .eyebrow {
-    @apply font-mono text-xs tracking-widest uppercase text-signal-teal;
+@layer components {
+  .hero-stage {
+    background-color: #000000;
   }
 
-  .eyebrow::before {
-    content: "── ";
-    color: theme("colors.ink.border");
+  .orb {
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle at 32% 28%,
+      #efefef 0%,
+      #9a9a9a 28%,
+      #3a3a3a 58%,
+      #0a0a0a 82%,
+      #000000 100%
+    );
+    box-shadow: inset 0 -18px 40px rgba(0, 0, 0, 0.55);
   }
 }
 
-/* Respect reduced-motion preference: kill the typewriter/blink/slide
-   animations for anyone who's asked the OS not to move things around. */
+@layer utilities {
+  .eyebrow {
+    @apply font-body text-xs tracking-[0.28em] uppercase text-signal-gold;
+  }
+
+  .eyebrow::before {
+    content: "";
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -16,13 +16,13 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 const SUGGESTED_CHIPS = [
-  { icon: "🤖", label: "GenAI experience", query: "What's his GenAI experience?" },
-  { icon: "☁️", label: "AWS experience", query: "Has he worked with AWS?" },
-  { icon: "📦", label: "Best project", query: "What's his best project and why?" },
-  { icon: "💼", label: "Internship experience", query: "Walk me through his internship experience." },
-  { icon: "🧠", label: "ML experience", query: "What's his machine learning experience?" },
-  { icon: "⚙️", label: "Backend experience", query: "What's his backend engineering experience?" },
-  { icon: "📄", label: "Why hire me?", query: "Why should I hire him?" },
+  { label: "GenAI", query: "What's his GenAI experience?" },
+  { label: "AWS", query: "Has he worked with AWS?" },
+  { label: "Best project", query: "What's his best project and why?" },
+  { label: "Internships", query: "Walk me through his internship experience." },
+  { label: "Machine learning", query: "What's his machine learning experience?" },
+  { label: "Backend", query: "What's his backend engineering experience?" },
+  { label: "Why hire me?", query: "Why should I hire him?" },
 ];
 
 function useTypewriterPlaceholder(active: boolean) {
@@ -38,8 +38,6 @@ function useTypewriterPlaceholder(active: boolean) {
   useEffect(() => {
     if (!active) return;
 
-    // Reduced motion: just rotate the full string every few seconds,
-    // no letter-by-letter animation.
     if (prefersReducedMotion.current) {
       let qIndex = 0;
       const interval = setInterval(() => {
@@ -62,7 +60,7 @@ function useTypewriterPlaceholder(active: boolean) {
         setPlaceholder(current.slice(0, charIndex));
         if (charIndex === current.length) {
           deleting = true;
-          timeoutId = setTimeout(tick, 1800); // pause at full string
+          timeoutId = setTimeout(tick, 1800);
           return;
         }
         timeoutId = setTimeout(tick, 45);
@@ -87,17 +85,14 @@ function useTypewriterPlaceholder(active: boolean) {
 }
 
 function RetrievalTrace() {
-  // The signature moment: while the answer is generating, show a small
-  // trace strip that visualizes retrieval actually happening — this is
-  // real behavior being shown, not a decorative spinner.
   return (
-    <div className="flex items-center gap-2 font-mono text-xs text-paper-faint">
+    <div className="flex items-center gap-2 text-xs text-paper-faint">
       <span className="flex gap-1">
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-teal [animation-delay:0ms]" />
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-teal [animation-delay:150ms]" />
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-teal [animation-delay:300ms]" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-gold [animation-delay:0ms]" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-gold [animation-delay:150ms]" />
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-gold [animation-delay:300ms]" />
       </span>
-      searching knowledge base…
+      Searching knowledge base
     </div>
   );
 }
@@ -114,15 +109,14 @@ function SourceChips({ sources }: { sources: ChatMessage["sources"] }) {
             href={source.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-signal-teal/30 bg-signal-teal/10 px-3 py-1 font-mono text-xs text-signal-teal transition-colors hover:bg-signal-teal/20"
+            className="inline-flex items-center rounded-full border border-signal-gold/40 bg-signal-gold/10 px-3 py-1 text-xs text-paper transition-colors hover:bg-signal-gold/20"
           >
-            <span className="text-[10px]">↗</span>
             {source.title}
           </a>
         ) : (
           <span
             key={i}
-            className="inline-flex items-center rounded-full border border-ink-border bg-ink-surface px-3 py-1 font-mono text-xs text-paper-muted"
+            className="inline-flex items-center rounded-full border border-ink-border bg-ink-surface px-3 py-1 text-xs text-paper-muted"
           >
             {source.title}
           </span>
@@ -192,31 +186,23 @@ export function ChatWidget() {
   }
 
   return (
-    <div id="chat" className="w-full">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-signal-gold" />
-        <p className="font-mono text-xs uppercase tracking-wider text-paper-muted">
-          Ask Saketh AI — grounded in his real projects and experience
-        </p>
-      </div>
-
-      {/* Message history */}
+    <div className="w-full">
       {messages.length > 0 && (
-        <div className="mb-4 max-h-[420px] space-y-4 overflow-y-auto rounded-xl border border-ink-border bg-ink-surface/50 p-4">
+        <div className="mb-4 max-h-[420px] space-y-4 overflow-y-auto rounded-2xl border border-white/10 bg-black/40 p-4">
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`animate-slide-up ${msg.role === "user" ? "text-right" : "text-left"}`}
             >
               {msg.role === "user" ? (
-                <p className="inline-block rounded-lg bg-ink-raised px-4 py-2 text-sm text-paper">
+                <p className="inline-block rounded-lg bg-signal-gold px-4 py-2 text-sm text-paper">
                   {msg.content}
                 </p>
               ) : msg.isLoading ? (
                 <RetrievalTrace />
               ) : (
                 <div className="inline-block max-w-[90%] text-left">
-                  <div className="prose-invert prose-sm rounded-lg border border-ink-border bg-ink px-4 py-3 font-body text-sm leading-relaxed text-paper [&_p]:m-0 [&_strong]:text-signal-gold">
+                  <div className="prose-invert prose-sm rounded-lg border border-white/10 bg-ink/80 px-4 py-3 text-sm leading-relaxed text-paper [&_p]:m-0 [&_strong]:text-signal-gold">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
                   <SourceChips sources={msg.sources} />
@@ -229,14 +215,10 @@ export function ChatWidget() {
       )}
 
       {error && (
-        <p className="mb-2 font-mono text-xs text-red-400">{error}</p>
+        <p className="mb-2 text-xs text-signal-gold">{error}</p>
       )}
 
-      {/* The hero query bar */}
       <form onSubmit={handleSubmit} className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-signal-gold">
-          &gt;
-        </span>
         <input
           type="text"
           value={input}
@@ -246,18 +228,17 @@ export function ChatWidget() {
           placeholder={placeholder}
           disabled={isSending}
           maxLength={500}
-          className="w-full rounded-xl border border-ink-border bg-ink-surface py-4 pl-9 pr-24 font-mono text-sm text-paper placeholder:text-paper-faint focus:border-signal-gold/50 disabled:opacity-60"
+          className="w-full rounded-full border border-white/20 bg-black/45 py-4 pl-5 pr-24 text-sm text-paper placeholder:text-paper-faint focus:border-signal-gold/70 disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={isSending || !input.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-signal-gold px-4 py-2 font-mono text-xs font-medium text-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full bg-signal-gold px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-paper transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
         >
-          {isSending ? "…" : "Ask"}
+          {isSending ? "..." : "Ask"}
         </button>
       </form>
 
-      {/* Suggested chips */}
       <div className="mt-4 flex flex-wrap gap-2">
         {SUGGESTED_CHIPS.map((chip) => (
           <button
@@ -265,9 +246,8 @@ export function ChatWidget() {
             type="button"
             onClick={() => sendMessage(chip.query)}
             disabled={isSending}
-            className="inline-flex items-center gap-1.5 rounded-full border border-ink-border bg-ink-surface px-3 py-1.5 font-mono text-xs text-paper-muted transition-colors hover:border-signal-gold/40 hover:text-paper disabled:opacity-40"
+            className="rounded-full border border-white/15 bg-black/30 px-3 py-1.5 text-xs text-paper-muted transition-colors hover:border-signal-gold/50 hover:text-paper disabled:opacity-40"
           >
-            <span>{chip.icon}</span>
             {chip.label}
           </button>
         ))}

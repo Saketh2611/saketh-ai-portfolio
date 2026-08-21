@@ -26,12 +26,12 @@ export default function ProjectDetailPage() {
   if (notFound) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-ink">
-        <p className="font-mono text-sm text-paper-muted">Project not found.</p>
+        <p className="text-sm text-paper-muted">Project not found.</p>
         <button
           onClick={() => router.push("/")}
-          className="font-mono text-xs text-signal-gold hover:underline"
+          className="text-xs uppercase tracking-[0.18em] text-signal-gold hover:underline"
         >
-          ← back home
+          Back home
         </button>
       </div>
     );
@@ -40,7 +40,7 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-ink">
-        <p className="animate-pulse font-mono text-sm text-paper-muted">loading…</p>
+        <p className="animate-pulse text-sm text-paper-muted">Loading</p>
       </div>
     );
   }
@@ -51,22 +51,23 @@ export default function ProjectDetailPage() {
       <main className="mx-auto max-w-3xl px-6 py-16">
         <button
           onClick={() => router.push("/#projects")}
-          className="mb-8 font-mono text-xs text-paper-muted hover:text-paper"
+          className="mb-8 text-xs uppercase tracking-[0.18em] text-paper-muted hover:text-paper"
         >
-          ← all projects
+          All projects
         </button>
 
-        <h1 className="font-display text-3xl font-semibold text-paper">{project.title}</h1>
+        <h1 className="font-display text-5xl tracking-wide text-paper">{project.title}</h1>
+        <span className="mt-6 block h-px w-16 bg-paper/80" />
 
-        <div className="mt-3 flex flex-wrap gap-3">
+        <div className="mt-6 flex flex-wrap gap-4">
           {project.github_url && (
             <a
               href={project.github_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs text-signal-teal hover:underline"
+              className="text-xs font-medium uppercase tracking-[0.18em] text-paper-muted hover:text-signal-gold"
             >
-              GitHub ↗
+              GitHub
             </a>
           )}
           {project.live_url && (
@@ -74,9 +75,9 @@ export default function ProjectDetailPage() {
               href={project.live_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs text-signal-gold hover:underline"
+              className="text-xs font-medium uppercase tracking-[0.18em] text-signal-gold hover:underline"
             >
-              Live Demo ↗
+              Live Demo
             </a>
           )}
         </div>
@@ -86,7 +87,7 @@ export default function ProjectDetailPage() {
             {project.tech_stack.map((tech) => (
               <span
                 key={tech}
-                className="rounded border border-ink-border px-2 py-0.5 font-mono text-[11px] text-signal-teal"
+                className="rounded-full border border-ink-border px-2.5 py-0.5 text-[11px] text-paper-muted"
               >
                 {tech}
               </span>

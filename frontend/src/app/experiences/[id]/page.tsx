@@ -26,12 +26,12 @@ export default function ExperienceDetailPage() {
   if (notFound) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-ink">
-        <p className="font-mono text-sm text-paper-muted">Experience not found.</p>
+        <p className="text-sm text-paper-muted">Experience not found.</p>
         <button
           onClick={() => router.push("/")}
-          className="font-mono text-xs text-signal-gold hover:underline"
+          className="text-xs uppercase tracking-[0.18em] text-signal-gold hover:underline"
         >
-          ← back home
+          Back home
         </button>
       </div>
     );
@@ -40,7 +40,7 @@ export default function ExperienceDetailPage() {
   if (!experience) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-ink">
-        <p className="animate-pulse font-mono text-sm text-paper-muted">loading…</p>
+        <p className="animate-pulse text-sm text-paper-muted">Loading</p>
       </div>
     );
   }
@@ -51,22 +51,23 @@ export default function ExperienceDetailPage() {
       <main className="mx-auto max-w-3xl px-6 py-16">
         <button
           onClick={() => router.push("/#experience")}
-          className="mb-8 font-mono text-xs text-paper-muted hover:text-paper"
+          className="mb-8 text-xs uppercase tracking-[0.18em] text-paper-muted hover:text-paper"
         >
-          ← all experience
+          All experience
         </button>
 
-        <h1 className="font-display text-3xl font-semibold text-paper">{experience.role_title}</h1>
-        <p className="mt-2 font-mono text-sm text-signal-teal">
+        <h1 className="font-display text-5xl tracking-wide text-paper">{experience.role_title}</h1>
+        <p className="mt-3 text-xs font-medium uppercase tracking-[0.18em] text-signal-gold">
           {experience.company} · {experience.start_date} – {experience.end_date || "Present"}
         </p>
+        <span className="mt-6 block h-px w-16 bg-paper/80" />
 
         {experience.tech_stack.length > 0 && (
           <div className="mt-6 flex flex-wrap gap-1.5">
             {experience.tech_stack.map((tech) => (
               <span
                 key={tech}
-                className="rounded border border-ink-border px-2 py-0.5 font-mono text-[11px] text-signal-teal"
+                className="rounded-full border border-ink-border px-2.5 py-0.5 text-[11px] text-paper-muted"
               >
                 {tech}
               </span>

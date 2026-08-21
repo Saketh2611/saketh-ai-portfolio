@@ -2,27 +2,27 @@ import type { Profile } from "@/types";
 
 export function Footer({ profile }: { profile: Profile }) {
   return (
-    <footer id="resume" className="border-t border-ink-border">
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+    <footer id="resume" className="border-t border-ink-border bg-ink">
+      <div className="mx-auto max-w-6xl px-6 py-14">
+        <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
           <div>
-            <p className="font-display text-sm font-semibold text-paper">
+            <p className="font-display text-4xl tracking-wide text-paper">
               {profile.full_name}
             </p>
-            <p className="mt-1 font-mono text-xs text-paper-muted">
-              {[profile.email, profile.phone, profile.location].filter(Boolean).join(" · ")}
+            <p className="mt-2 max-w-md text-sm text-paper-muted">
+              {[profile.email, profile.phone, profile.location].filter(Boolean).join("  ·  ")}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center gap-5">
             {profile.github_url && (
               <a
                 href={profile.github_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs text-paper-muted transition-colors hover:text-signal-teal"
+                className="text-xs font-medium uppercase tracking-[0.2em] text-paper-muted transition-colors hover:text-paper"
               >
-                GitHub ↗
+                GitHub
               </a>
             )}
             {profile.linkedin_url && (
@@ -30,9 +30,9 @@ export function Footer({ profile }: { profile: Profile }) {
                 href={profile.linkedin_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-xs text-paper-muted transition-colors hover:text-signal-teal"
+                className="text-xs font-medium uppercase tracking-[0.2em] text-paper-muted transition-colors hover:text-paper"
               >
-                LinkedIn ↗
+                LinkedIn
               </a>
             )}
             {profile.resume_pdf_url && (
@@ -40,7 +40,7 @@ export function Footer({ profile }: { profile: Profile }) {
                 href={profile.resume_pdf_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg bg-signal-gold px-4 py-2 font-mono text-xs font-medium text-ink transition-opacity hover:opacity-90"
+                className="rounded-md bg-signal-gold px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-paper transition-opacity hover:opacity-90"
               >
                 Download Resume
               </a>
@@ -48,7 +48,7 @@ export function Footer({ profile }: { profile: Profile }) {
           </div>
         </div>
 
-        <p className="mt-8 text-center font-mono text-[11px] text-paper-faint">
+        <p className="mt-12 text-xs text-paper-faint">
           This site is itself a deployed RAG application — FastAPI, pgvector, BGE-M3, Groq.
         </p>
       </div>

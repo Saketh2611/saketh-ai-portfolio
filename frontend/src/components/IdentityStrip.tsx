@@ -3,27 +3,23 @@ import type { Profile } from "@/types";
 
 export function IdentityStrip({ profile }: { profile: Profile }) {
   return (
-    <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-      {profile.photo_url ? (
-        <Image
-          src={profile.photo_url}
-          alt={profile.full_name}
-          width={72}
-          height={72}
-          className="h-[72px] w-[72px] rounded-full border-2 border-ink-border object-cover"
-        />
-      ) : (
-        <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 border-ink-border bg-ink-surface font-display text-xl text-paper-muted">
-          {profile.full_name ? profile.full_name.charAt(0) : "S"}
-        </div>
-      )}
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-paper sm:text-3xl">
-          {profile.full_name || "Loading…"}
-        </h1>
-        <p className="mt-1 font-mono text-sm text-signal-teal">{profile.headline}</p>
-        {profile.location && (
-          <p className="mt-1 text-sm text-paper-muted">{profile.location}</p>
+    <div className="relative mx-auto flex w-full max-w-[420px] items-center justify-center">
+      <div className="relative aspect-square w-[72%] overflow-hidden rounded-full border border-white/10 bg-ink-raised">
+        {profile.photo_url ? (
+          <Image
+            src={profile.photo_url}
+            alt={profile.full_name}
+            width={640}
+            height={640}
+            priority
+            className="h-full w-full object-cover object-top grayscale"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <span className="text-7xl font-bold text-paper/80">
+              {profile.full_name ? profile.full_name.charAt(0) : "S"}
+            </span>
+          </div>
         )}
       </div>
     </div>

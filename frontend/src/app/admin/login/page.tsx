@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={isSubmitting || !password}
-          className="mt-6 w-full rounded-lg bg-signal-gold py-2.5 font-mono text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-6 w-full rounded-lg bg-signal-gold py-2.5 font-mono text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isSubmitting ? "Signing in…" : "Sign in"}
         </button>

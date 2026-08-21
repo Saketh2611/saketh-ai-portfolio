@@ -138,7 +138,7 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={isSaving}
-          className="rounded-lg bg-signal-gold px-5 py-2.5 font-mono text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-signal-gold px-5 py-2.5 font-mono text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {isSaving ? "Saving…" : "Save profile"}
         </button>

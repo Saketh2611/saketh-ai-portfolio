@@ -90,8 +90,8 @@ export function PhotoUpload({
             unoptimized // local blob: URLs during preview aren't next/image-optimizable
           />
         ) : (
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ink-raised text-2xl">
-            📷
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ink-raised text-xs uppercase tracking-wider text-paper-muted">
+            Photo
           </div>
         )}
 
