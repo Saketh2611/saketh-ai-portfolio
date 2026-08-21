@@ -7,6 +7,7 @@ import { PhotoUpload } from "@/components/admin/PhotoUpload";
 import { ProfileForm } from "@/components/admin/ProfileForm";
 import { ResumeUpload } from "@/components/admin/ResumeUpload";
 import { ProjectList } from "@/components/admin/ProjectList";
+import { ExperienceList } from "@/components/admin/ExperienceList";   {/* ADD THIS LINE */}
 import { StatsBar } from "@/components/admin/StatsBar";
 import { api } from "@/lib/api";
 import { clearToken } from "@/lib/auth";
@@ -79,6 +80,19 @@ function DashboardContent() {
             ── Resume
           </h2>
           {profile && <ResumeUpload currentResumeUrl={profile.resume_pdf_url} />}
+        </section>
+
+        {/* ADD THIS ENTIRE SECTION — place it before or after Projects, your call */}
+        <section>
+          <h2 className="mb-4 font-mono text-xs uppercase tracking-wider text-paper-muted">
+            ── Experience
+          </h2>
+          <p className="mb-4 text-xs text-paper-faint">
+            Add each role — company, dates, and the full write-up. It gets
+            chunked and indexed into the chatbot&apos;s knowledge base
+            automatically, and appears on the live site immediately.
+          </p>
+          <ExperienceList />
         </section>
 
         <section>

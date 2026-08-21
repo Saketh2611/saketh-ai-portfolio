@@ -5,10 +5,11 @@ import { Navbar } from "@/components/Navbar";
 import { IdentityStrip } from "@/components/IdentityStrip";
 import { ChatWidget } from "@/components/ChatWidget";
 import { ProjectGrid } from "@/components/ProjectGrid";
+import { ExperienceGrid } from "@/components/ExperienceGrid";
 import { SectionEyebrow } from "@/components/SectionEyebrow";
 import { Footer } from "@/components/Footer";
 import { api } from "@/lib/api";
-import type { Profile, Project } from "@/types";
+import type { Profile, Project, Experience } from "@/types";
 
 function LoadingScreen() {
   return (
@@ -35,13 +36,15 @@ function ErrorScreen({ message }: { message: string }) {
 export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([api.getProfile(), api.getProjects()])
-      .then(([profileData, projectsData]) => {
+    Promise.all([api.getProfile(), api.getProjects(), api.getExperiences()])
+      .then(([profileData, projectsData, experiencesData]) => {
         setProfile(profileData);
         setProjects(projectsData);
+        setExperiences(experiencesData);
       })
       .catch((err) => setError(err.message || "Unknown error"));
   }, []);
@@ -67,25 +70,16 @@ export default function HomePage() {
           <ChatWidget />
         </section>
 
+        {/* Experience */}
+        <section id="experience" className="py-16">
+          <SectionEyebrow>source:experience</SectionEyebrow>
+          <ExperienceGrid experiences={experiences} />
+        </section>
+
         {/* Projects */}
         <section id="projects" className="py-16">
           <SectionEyebrow>source:project</SectionEyebrow>
           <ProjectGrid projects={projects} />
-        </section>
-
-        {/* Experience anchor — points back to the chat, since experience
-            detail lives in the RAG knowledge base rather than a second
-            static list that could drift out of sync with it. */}
-        <section id="experience" className="py-16">
-          <SectionEyebrow>source:experience</SectionEyebrow>
-          <p className="max-w-xl text-sm leading-relaxed text-paper-muted">
-            Full experience detail — role by role, what was built, what
-            stack — lives in the chat above. Ask{" "}
-            <span className="font-mono text-signal-teal">
-              &quot;walk me through his work experience&quot;
-            </span>{" "}
-            for the complete picture with sources.
-          </p>
         </section>
       </main>
 

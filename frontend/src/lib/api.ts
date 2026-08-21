@@ -11,6 +11,10 @@ import type {
   ProjectCreate,
   ProjectDetail,
   ProjectUpdate,
+  Experience,
+  ExperienceCreate,
+  ExperienceDetail,
+  ExperienceUpdate,
 } from "@/types";
 import { getToken } from "@/lib/auth";
 
@@ -72,6 +76,10 @@ export const api = {
   getProject: (id: string) => request<ProjectDetail>(`/api/projects/${id}`),
 
   getResumeUrl: () => request<{ resume_url: string }>("/api/resume"),
+
+  getExperiences: () => request<Experience[]>("/api/experiences"),
+
+  getExperience: (id: string) => request<ExperienceDetail>(`/api/experiences/${id}`),
 
   sendChat: (query: string) =>
     request<ChatResponse>("/api/chat", {
@@ -145,6 +153,25 @@ export const api = {
 
   deleteProject: (id: string) =>
     request<void>(`/api/admin/projects/${id}`, { method: "DELETE" }, true),
+
+  getAdminExperiences: () => request<ExperienceDetail[]>("/api/admin/experiences", {}, true),
+
+  createExperience: (payload: ExperienceCreate) =>
+    request<ExperienceDetail>(
+      "/api/admin/experiences",
+      { method: "POST", body: JSON.stringify(payload) },
+      true
+    ),
+
+  updateExperience: (id: string, payload: ExperienceUpdate) =>
+    request<ExperienceDetail>(
+      `/api/admin/experiences/${id}`,
+      { method: "PUT", body: JSON.stringify(payload) },
+      true
+    ),
+
+  deleteExperience: (id: string) =>
+    request<void>(`/api/admin/experiences/${id}`, { method: "DELETE" }, true),
 
   // --- Admin stats ---
 

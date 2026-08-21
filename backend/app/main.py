@@ -22,6 +22,7 @@ from app.api.public.routes import router as public_router
 from app.core.bootstrap import ensure_admin_credentials
 from app.core.config import get_settings
 from app.db.session import AsyncSessionLocal
+from app.api.admin.experience_routes import router as admin_experience_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -63,6 +64,7 @@ app.include_router(admin_auth_router)
 app.include_router(admin_profile_router)
 app.include_router(admin_project_router)
 app.include_router(admin_stats_router)
+app.include_router(admin_experience_router)
 
 
 @app.get("/health")

@@ -84,6 +84,51 @@ class ProjectUpdate(BaseModel):
     full_description: str | None = None
     tech_stack: list[str] | None = None
     display_order: int | None = None
+    
+    
+# --- Experience ---
+
+class ExperienceOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    role_title: str
+    company: str
+    location: str | None
+    start_date: str
+    end_date: str | None
+    short_description: str
+    tech_stack: list[str]
+    display_order: int
+
+
+class ExperienceDetailOut(ExperienceOut):
+    full_description: str
+    created_at: datetime
+
+
+class ExperienceCreate(BaseModel):
+    role_title: str = Field(..., min_length=1, max_length=200)
+    company: str = Field(..., min_length=1, max_length=200)
+    location: str | None = None
+    start_date: str = Field(..., min_length=1)
+    end_date: str | None = None
+    short_description: str = Field(..., max_length=300)
+    full_description: str = Field(..., min_length=1)
+    tech_stack: list[str] = Field(default_factory=list)
+    display_order: int = 0
+
+
+class ExperienceUpdate(BaseModel):
+    role_title: str | None = None
+    company: str | None = None
+    location: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    short_description: str | None = None
+    full_description: str | None = None
+    tech_stack: list[str] | None = None
+    display_order: int | None = None
 
 
 # --- Chat ---

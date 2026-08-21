@@ -55,6 +55,37 @@ export interface ProjectCreate {
 
 export type ProjectUpdate = Partial<ProjectCreate>;
 
+export interface Experience {
+  id: string;
+  role_title: string;
+  company: string;
+  location: string | null;
+  start_date: string;
+  end_date: string | null;
+  short_description: string;
+  tech_stack: string[];
+  display_order: number;
+}
+
+export interface ExperienceDetail extends Experience {
+  full_description: string;
+  created_at: string;
+}
+
+export interface ExperienceCreate {
+  role_title: string;
+  company: string;
+  location?: string;
+  start_date: string;
+  end_date?: string;
+  short_description: string;
+  full_description: string;
+  tech_stack: string[];
+  display_order?: number;
+}
+
+export type ExperienceUpdate = Partial<ExperienceCreate>;
+
 export interface ChatSource {
   title: string;
   url: string | null;

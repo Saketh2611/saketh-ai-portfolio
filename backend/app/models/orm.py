@@ -54,6 +54,22 @@ class Project(Base):
     chunks: Mapped[list["Chunk"]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
+    
+class Experience(Base):
+    __tablename__ = "experiences"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    role_title: Mapped[str] = mapped_column(Text, nullable=False)
+    company: Mapped[str] = mapped_column(Text, nullable=False)
+    location: Mapped[str | None] = mapped_column(Text, nullable=True)
+    start_date: Mapped[str] = mapped_column(Text, nullable=False)
+    end_date: Mapped[str | None] = mapped_column(Text, nullable=True)
+    short_description: Mapped[str] = mapped_column(Text, default="")
+    full_description: Mapped[str] = mapped_column(Text, default="")
+    tech_stack: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+    display_order: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 
 
 class Chunk(Base):

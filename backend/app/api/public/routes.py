@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.rate_limit import enforce_chat_rate_limit
 from app.db.session import get_db
-from app.models.orm import ChatLog, Profile, Project
+from app.models.orm import ChatLog, Profile, Project, Experience
 from app.models.schemas import (
     ChatRequest,
     ChatResponse,
@@ -20,6 +20,8 @@ from app.models.schemas import (
     ProfileOut,
     ProjectDetailOut,
     ProjectOut,
+    ExperienceOut,
+    ExperienceDetailOut,
 )
 from app.services.llm_service import generate_answer
 from app.services.retrieval_service import retrieve_relevant_chunks
@@ -69,6 +71,21 @@ async def get_resume_url(db: AsyncSession = Depends(get_db)) -> dict:
 
     return {"resume_url": url}
 
+
+@router.get("/experiences", response_model=list[ExperienceOut])
+async def list_experiences(db: AsyncSession = Depends(get_db)) -> list[ExperienceOut]:
+    result = await db.execute(select(Experience).order_by(Experience.display_order, Experience.created_at.desc()))
+    return [ExperienceOut.model_validate(e) for e in result.scalars().all()]
+
+@router.get("/experiences/{experience_id}", response_model=ExperienceDetailOut)
+async def get_experience(experience_id: uuid.UUID, db: AsyncSession = Depends(get_db)) -> ExperienceDetailOut:
+    result = await db.execute(select(Experience).where(Experience.id == experience_id))
+    experience = result.scalar_one_or_none()
+
+    if experience is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Experience not found")
+
+    return ExperienceDetailOut.model_validate(experience)
 
 @router.post("/chat", response_model=ChatResponse, dependencies=[Depends(enforce_chat_rate_limit)])
 async def chat(payload: ChatRequest, request: Request, db: AsyncSession = Depends(get_db)) -> ChatResponse:

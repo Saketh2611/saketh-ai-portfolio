@@ -85,6 +85,37 @@ async def reembed_profile_summary(db: AsyncSession, summary: str, full_name: str
         )
 
     await db.commit()
+    
+async def reembed_experience(db: AsyncSession, experience_id: uuid.UUID, role_title: str, company: str, full_description: str) -> None:
+    """Mirrors reembed_project — deletes existing chunks for this
+    experience and re-creates them from the current description."""
+    await db.execute(delete(Chunk).where(Chunk.source_id == experience_id, Chunk.source_type == "experience"))
+
+    raw_chunks = split_into_chunks(full_description)
+    if not raw_chunks:
+        await db.commit()
+        return
+
+    prefixed = [f"Experience: {role_title} at {company}\n\n{chunk}" for chunk in raw_chunks]
+    embeddings = await embed_texts(prefixed)
+
+    for text, embedding in zip(prefixed, embeddings):
+        db.add(
+            Chunk(
+                source_type="experience",
+                source_id=experience_id,
+                content=text,
+                embedding=embedding,
+                metadata_={"title": f"{role_title} — {company}"},
+            )
+        )
+
+    await db.commit()
+
+
+async def delete_experience_chunks(db: AsyncSession, experience_id: uuid.UUID) -> None:
+    await db.execute(delete(Chunk).where(Chunk.source_id == experience_id, Chunk.source_type == "experience"))
+    await db.commit()
 
 
 async def add_resume_section(db: AsyncSession, section_title: str, content: str) -> None:
