@@ -1,53 +1,58 @@
 """
-Embedding service — wraps bge-small-en-v1.5 (sentence-transformers).
+Embedding service — wraps Cohere's hosted embedding API.
 
-Swapped from BGE-M3 (1024-dim, ~2GB) to bge-small-en-v1.5 (384-dim,
-~130MB) specifically to fit free-tier hosting RAM limits (Render free
-tier: 512MB). Retrieval quality is somewhat lower than BGE-M3, but
-this app's scale (single-digit to low-hundreds of chunks) doesn't need
-BGE-M3's extra capacity to work well.
+Used identically in every environment: the deployed backend (for live
+/chat queries) and any local session (for admin content ingestion).
+There is deliberately only one embedding implementation in this app —
+never mix this with a locally-loaded model, since two different
+embedding models produce vectors in different, non-comparable spaces.
+Mixing them silently breaks cosine similarity search system-wide.
 
-The model is loaded once as a module-level singleton, not per-request.
-FastAPI's startup event triggers the first load so the first real
-request isn't the one paying that cost.
+Cohere's free trial tier requires no credit card and covers this app's
+scale comfortably. embed-multilingual-v3.0 outputs 1024 dimensions.
 """
 
 import logging
 
-from sentence_transformers import SentenceTransformer
+import cohere
 
 from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-_model: SentenceTransformer | None = None
+EMBED_MODEL = "embed-multilingual-v3.0"
+
+_client: cohere.AsyncClientV2 | None = None
 
 
-def get_embedding_model() -> SentenceTransformer:
-    """Lazy singleton — first call loads the model, every call after reuses it."""
-    global _model
-    if _model is None:
-        logger.info("Loading embedding model: %s", settings.embedding_model)
-        _model = SentenceTransformer(settings.embedding_model)
-        logger.info("Embedding model loaded.")
-    return _model
+def get_cohere_client() -> cohere.AsyncClientV2:
+    global _client
+    if _client is None:
+        logger.info("Initializing Cohere client")
+        _client = cohere.AsyncClientV2(api_key=settings.cohere_api_key)
+    return _client
 
 
-def embed_text(text: str) -> list[float]:
-    """Embed a single string. Returns a plain Python list (not a numpy
-    array) so it serializes cleanly into the pgvector column."""
-    model = get_embedding_model()
-    vector = model.encode(text, normalize_embeddings=True)
-    return vector.tolist()
+async def embed_text(text: str) -> list[float]:
+    client = get_cohere_client()
+    response = await client.embed(
+        texts=[text],
+        model=EMBED_MODEL,
+        input_type="search_query",
+        embedding_types=["float"],
+    )
+    return response.embeddings.float[0]
 
 
-def embed_texts(texts: list[str]) -> list[list[float]]:
-    """Batch embed — used when chunking a project description into several
-    chunks at once. Batching through the model is meaningfully faster than
-    calling embed_text() in a loop."""
+async def embed_texts(texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
-    model = get_embedding_model()
-    vectors = model.encode(texts, normalize_embeddings=True, batch_size=16)
-    return [v.tolist() for v in vectors]
+    client = get_cohere_client()
+    response = await client.embed(
+        texts=texts,
+        model=EMBED_MODEL,
+        input_type="search_document",
+        embedding_types=["float"],
+    )
+    return response.embeddings.float

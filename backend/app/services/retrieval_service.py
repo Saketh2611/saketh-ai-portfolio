@@ -10,13 +10,14 @@ doesn't need per-source-type result quotas at this scale.
 
 import uuid
 from dataclasses import dataclass
+import logging
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.orm import Chunk
 from app.services.embedding_service import embed_text
-
+logger = logging.getLogger(__name__)
 DEFAULT_TOP_K = 5
 
 
@@ -41,7 +42,7 @@ async def retrieve_relevant_chunks(
     We order ascending and take the first top_k rows — the ORM equivalent
     of `ORDER BY embedding <=> :query_vector LIMIT :top_k`.
     """
-    query_embedding = embed_text(query)
+    query_embedding = await embed_text(query)
 
     stmt = (
         select(Chunk)
@@ -51,6 +52,8 @@ async def retrieve_relevant_chunks(
 
     result = await db.execute(stmt)
     rows = result.scalars().all()
+    
+    logger.info(rows)
 
     return [
         RetrievedChunk(

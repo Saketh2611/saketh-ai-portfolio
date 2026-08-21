@@ -32,7 +32,7 @@ async def reembed_project(db: AsyncSession, project_id: uuid.UUID, title: str, g
         await db.commit()
         return
 
-    embeddings = embed_texts(chunk_texts)
+    embeddings = await embed_texts(chunk_texts)
 
     for text, embedding in zip(chunk_texts, embeddings):
         db.add(
@@ -71,7 +71,7 @@ async def reembed_profile_summary(db: AsyncSession, summary: str, full_name: str
         return
 
     prefixed = [f"About {full_name}:\n\n{chunk}" for chunk in chunk_texts]
-    embeddings = embed_texts(prefixed)
+    embeddings = await embed_texts(prefixed)
 
     for text, embedding in zip(prefixed, embeddings):
         db.add(
@@ -105,7 +105,7 @@ async def add_resume_section(db: AsyncSession, section_title: str, content: str)
         return
 
     prefixed = [f"{section_title}:\n\n{chunk}" for chunk in chunk_texts]
-    embeddings = embed_texts(prefixed)
+    embeddings = await embed_texts(prefixed)
 
     for text, embedding in zip(prefixed, embeddings):
         db.add(

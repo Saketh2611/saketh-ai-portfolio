@@ -22,7 +22,6 @@ from app.api.public.routes import router as public_router
 from app.core.bootstrap import ensure_admin_credentials
 from app.core.config import get_settings
 from app.db.session import AsyncSessionLocal
-from app.services.embedding_service import get_embedding_model
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,9 +36,7 @@ async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as db:
         await ensure_admin_credentials(db, settings.admin_password, force=False)
 
-    # Preload synchronously at startup — a few seconds of slower boot
-    # beats a few seconds of slower first chat response.
-    get_embedding_model()
+
 
     logger.info("Startup complete.")
     yield

@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # --- Groq ---
     groq_api_key: str
     groq_model: str = "llama-3.3-70b-versatile"
+    
+    # --- Cohere ---
+    cohere_api_key: str
 
     # --- Auth ---
     jwt_secret_key: str

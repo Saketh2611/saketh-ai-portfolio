@@ -13,9 +13,9 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.20
 
 # Embeddings + LLM
-sentence-transformers==3.3.1
+cohere==5.13.3
 groq==0.13.1
-torch==2.6.0
+
 
 # Storage / HTTP
 supabase==2.10.0
