@@ -9,6 +9,7 @@ import { ExperienceGrid } from "@/components/ExperienceGrid";
 import { SectionEyebrow } from "@/components/SectionEyebrow";
 import { Footer } from "@/components/Footer";
 import { api } from "@/lib/api";
+import { SITE_URL } from "@/lib/site";
 import type { Profile, Project, Experience } from "@/types";
 
 function firstName(fullName: string) {
@@ -61,9 +62,22 @@ export default function HomePage() {
 
   const given = firstName(profile.full_name);
   const family = restOfName(profile.full_name);
+  const personJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: profile.full_name,
+    jobTitle: profile.headline,
+    description: profile.summary,
+    url: SITE_URL,
+    sameAs: [profile.github_url, profile.linkedin_url].filter(Boolean),
+  }).replace(/</g, "\\u003c");
 
   return (
     <div className="min-h-screen bg-black">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: personJsonLd }}
+      />
       <Navbar />
 
       <section id="about" className="hero-stage relative overflow-hidden">

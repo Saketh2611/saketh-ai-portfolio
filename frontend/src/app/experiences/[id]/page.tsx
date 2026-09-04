@@ -1,46 +1,57 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { api, ApiRequestError } from "@/lib/api";
 import type { ExperienceDetail } from "@/types";
 
-export default function ExperienceDetailPage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const [experience, setExperience] = useState<ExperienceDetail | null>(null);
-  const [notFound, setNotFound] = useState(false);
+type ExperiencePageProps = {
+  params: { id: string };
+};
 
-  useEffect(() => {
-    api
-      .getExperience(params.id)
-      .then(setExperience)
-      .catch((err) => {
-        if (err instanceof ApiRequestError && err.status === 404) {
-          setNotFound(true);
-        }
-      });
-  }, [params.id]);
+async function getExperience(id: string): Promise<ExperienceDetail | null> {
+  try {
+    return await api.getExperience(id);
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) return null;
+    throw error;
+  }
+}
 
-  if (notFound) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-ink">
-        <p className="text-sm text-paper-muted">Experience not found.</p>
-        <button
-          onClick={() => router.push("/")}
-          className="text-xs uppercase tracking-[0.18em] text-signal-gold hover:underline"
-        >
-          Back home
-        </button>
-      </div>
-    );
+export async function generateMetadata({ params }: ExperiencePageProps): Promise<Metadata> {
+  const experience = await getExperience(params.id);
+
+  if (!experience) {
+    return {
+      title: "Experience not found | Saketh Vaddiparthi",
+      description: "The requested experience could not be found.",
+    };
+  }
+
+  return {
+    title: `${experience.role_title} at ${experience.company} | Saketh Vaddiparthi`,
+    description: experience.short_description,
+  };
+}
+
+export default async function ExperienceDetailPage({ params }: ExperiencePageProps) {
+  let experience: ExperienceDetail | null = null;
+
+  try {
+    experience = await getExperience(params.id);
+  } catch {
+    experience = null;
   }
 
   if (!experience) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-ink">
-        <p className="animate-pulse text-sm text-paper-muted">Loading</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-ink">
+        <p className="text-sm text-paper-muted">Experience not found.</p>
+        <Link
+          href="/"
+          className="text-xs uppercase tracking-[0.18em] text-signal-gold hover:underline"
+        >
+          Back home
+        </Link>
       </div>
     );
   }
@@ -49,12 +60,12 @@ export default function ExperienceDetailPage() {
     <div className="min-h-screen bg-ink">
       <Navbar />
       <main className="mx-auto max-w-3xl px-6 py-16">
-        <button
-          onClick={() => router.push("/#experience")}
+        <Link
+          href="/#experience"
           className="mb-8 text-xs uppercase tracking-[0.18em] text-paper-muted hover:text-paper"
         >
           All experience
-        </button>
+        </Link>
 
         <h1 className="font-display text-5xl tracking-wide text-paper">{experience.role_title}</h1>
         <p className="mt-3 text-xs font-medium uppercase tracking-[0.18em] text-signal-gold">
