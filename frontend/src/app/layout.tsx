@@ -45,6 +45,9 @@ export const metadata: Metadata = {
       "AI Engineer building RAG pipelines, LLM agents, and production backend systems. Ask the chatbot below — it actually knows his work.",
     images: [`${SITE_URL}/opengraph-image`],
   },
+  verification: {
+    google: "Q4lfruhPccMwhzcAt9MXywZOL7k2QWr6br9ORavoRmk",
+  },
 };
 
 export default function RootLayout({
