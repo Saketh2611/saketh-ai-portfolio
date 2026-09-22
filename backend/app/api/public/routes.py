@@ -87,16 +87,20 @@ async def get_experience(experience_id: uuid.UUID, db: AsyncSession = Depends(ge
 
     return ExperienceDetailOut.model_validate(experience)
 
-@router.post("/chat", response_model=ChatResponse, dependencies=[Depends(enforce_chat_rate_limit)])
+@router.post("/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest, request: Request, db: AsyncSession = Depends(get_db)) -> ChatResponse:
     """
     The core RAG endpoint: embed query → retrieve chunks → generate
     grounded answer → return answer with source citations.
 
-    Rate-limited via the dependency above (429 on excess). Logs every
-    query to chat_logs — useful signal for which chunks are missing
-    content recruiters actually ask about.
+    Rate-limited in-app using request/day and token/day caps (all half of the
+    upstream model limits). Logs every query to chat_logs — useful signal for
+    which chunks are missing content recruiters actually ask about.
     """
+    limit_message = enforce_chat_rate_limit(request, payload.query)
+    if limit_message is not None:
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=limit_message)
+
     chunks = await retrieve_relevant_chunks(db, payload.query)
     answer = await generate_answer(payload.query, chunks)
     logger.info("Chat query: %s, retrieved %d chunks", payload.query, len(chunks))

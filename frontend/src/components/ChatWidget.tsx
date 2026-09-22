@@ -169,7 +169,7 @@ export function ChatWidget() {
       const message =
         err instanceof ApiRequestError
           ? err.status === 429
-            ? "Too many questions at once — give it a few seconds and try again."
+            ? `${err.message} ${err.message.toLowerCase().includes("per day") ? "Please try again tomorrow." : "Please wait a moment and try again."}`
             : err.message
           : "Something went wrong. Please try again.";
 

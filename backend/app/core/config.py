@@ -49,7 +49,13 @@ class Settings(BaseSettings):
     embedding_dim: int = 1024
 
     # --- Rate limiting ---
-    chat_rate_limit_per_minute: int = 5
+    # Keep the app's current RPM as-is and halve the rest of the model caps:
+    # 30 rpm -> 10 rpm in app (unchanged), 1k rpd -> 500 rpd,
+    # 8k tpm -> 4k tpm, 200k tpd -> 100k tpd.
+    chat_rate_limit_per_minute: int = 10
+    chat_rate_limit_per_day: int = 500
+    chat_token_limit_per_minute: int = 4000
+    chat_token_limit_per_day: int = 100000
 
     # --- App ---
     environment: str = "development"
