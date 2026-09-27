@@ -9,7 +9,7 @@ from app.services import llm_service
 async def test_generate_answer_returns_exact_query_cache_hit(monkeypatch):
     class FakeRedis:
         async def get(self, key):
-            assert key.startswith("llm:answer:v1:")
+            assert key.startswith("llm:answer:v2:")
             return "cached answer"
 
         async def set(self, *args, **kwargs):

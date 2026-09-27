@@ -24,7 +24,10 @@ from app.core.config import get_settings
 from app.db.session import AsyncSessionLocal
 from app.api.admin.experience_routes import router as admin_experience_router
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 logger = logging.getLogger(__name__)
 
 settings = get_settings()

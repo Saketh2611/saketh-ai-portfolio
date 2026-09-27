@@ -10,6 +10,7 @@ portfolio" look worse than a static one.
 """
 
 import hashlib
+import json
 import logging
 from urllib.parse import quote
 
@@ -24,6 +25,29 @@ settings = get_settings()
 
 _client: AsyncGroq | None = None
 _redis_client: "UpstashRedisClient | None" = None
+
+
+def _as_cached_answer(value: object) -> str | None:
+    if isinstance(value, dict):
+        for key in ("answer", "content", "response", "text", "value"):
+            answer = _as_cached_answer(value.get(key))
+            if answer is not None:
+                return answer
+        return None
+
+    if not isinstance(value, str):
+        return None
+
+    try:
+        decoded = json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+    if isinstance(decoded, str):
+        return decoded
+    if isinstance(decoded, dict):
+        return _as_cached_answer(decoded)
+    return value
 
 
 class UpstashRedisClient:
@@ -45,23 +69,16 @@ class UpstashRedisClient:
 
         if isinstance(payload, dict):
             result = payload.get("result")
-            if isinstance(result, dict):
-                value = result.get("value")
-                if isinstance(value, str):
-                    logger.info(
-                        "Redis cache HIT",
-                        extra={"key": key, "redis_action": "get", "value_length": len(value)},
-                    )
-                    return value
-            elif isinstance(result, str):
+            value = _as_cached_answer(result)
+            if value is not None:
                 logger.info(
                     "Redis cache HIT",
-                    extra={"key": key, "redis_action": "get", "value_length": len(result)},
+                    extra={"key": key, "redis_action": "get", "value_length": len(value)},
                 )
-                return result
+                return value
 
-            value = payload.get("value")
-            if isinstance(value, str):
+            value = _as_cached_answer(payload.get("value"))
+            if value is not None:
                 logger.info(
                     "Redis cache HIT",
                     extra={"key": key, "redis_action": "get", "value_length": len(value)},
@@ -72,13 +89,9 @@ class UpstashRedisClient:
         return None
 
     async def set(self, key: str, value: str, *, ex: int | None = None) -> None:
-        payload: dict[str, object] = {"value": value}
-        if ex is not None:
-            payload["ex"] = ex
-
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
         }
         logger.info(
             "Redis cache SET start",
@@ -87,7 +100,8 @@ class UpstashRedisClient:
         response = await httpx.AsyncClient(timeout=10.0).post(
             f"{self.url}/set/{quote(key, safe='')}",
             headers=headers,
-            json=payload,
+            params={"EX": ex} if ex is not None else None,
+            content=value,
         )
         response.raise_for_status()
         logger.info("Redis cache SET success", extra={"key": key, "redis_action": "set", "ttl_seconds": ex})
@@ -153,7 +167,7 @@ async def generate_answer(query: str, chunks: list[RetrievedChunk]) -> str:
     redis_client = get_redis_client()
     cache_key = None
     if redis_client is not None:
-        cache_key = "llm:answer:v1:" + hashlib.sha256(query.strip().lower().encode("utf-8")).hexdigest()
+        cache_key = "llm:answer:v2:" + hashlib.sha256(query.strip().lower().encode("utf-8")).hexdigest()
         logger.info(
             "LLM cache lookup",
             extra={"query_preview": query[:200], "cache_key": cache_key, "chunk_count": len(chunks)},
