@@ -9,8 +9,11 @@ doesn't exist, which is the exact failure mode that makes an "AI
 portfolio" look worse than a static one.
 """
 
+import hashlib
 import logging
+from urllib.parse import quote
 
+import httpx
 from groq import AsyncGroq
 
 from app.core.config import get_settings
@@ -20,6 +23,42 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 _client: AsyncGroq | None = None
+_redis_client: "UpstashRedisClient | None" = None
+
+
+class UpstashRedisClient:
+    """Small async wrapper around the Upstash Redis REST API."""
+
+    def __init__(self, url: str, token: str) -> None:
+        self.url = url.rstrip("/")
+        self.token = token
+
+    async def get(self, key: str) -> str | None:
+        headers = {"Authorization": f"Bearer {self.token}"}
+        response = await httpx.AsyncClient(timeout=10.0).get(
+            f"{self.url}/get/{quote(key, safe='')}",
+            headers=headers,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        value = payload.get("result")
+        return value if isinstance(value, str) else None
+
+    async def set(self, key: str, value: str, *, ex: int | None = None) -> None:
+        payload: dict[str, object] = {"value": value}
+        if ex is not None:
+            payload["ex"] = ex
+
+        headers = {
+            "Authorization": f"Bearer {self.token}",
+            "Content-Type": "application/json",
+        }
+        response = await httpx.AsyncClient(timeout=10.0).post(
+            f"{self.url}/set/{quote(key, safe='')}",
+            headers=headers,
+            json=payload,
+        )
+        response.raise_for_status()
 
 
 def get_groq_client() -> AsyncGroq:
@@ -27,6 +66,18 @@ def get_groq_client() -> AsyncGroq:
     if _client is None:
         _client = AsyncGroq(api_key=settings.groq_api_key)
     return _client
+
+
+def get_redis_client() -> UpstashRedisClient | None:
+    global _redis_client
+    if _redis_client is None:
+        if not settings.upstash_redis_rest_url or not settings.upstash_redis_rest_token:
+            return None
+        _redis_client = UpstashRedisClient(
+            settings.upstash_redis_rest_url,
+            settings.upstash_redis_rest_token,
+        )
+    return _redis_client
 
 
 SYSTEM_PROMPT = """You are "Saketh AI" — a chatbot embedded in Vaddiparthi Saketh's \
@@ -67,6 +118,14 @@ async def generate_answer(query: str, chunks: list[RetrievedChunk]) -> str:
     Returns plain text — the caller (chat endpoint) is responsible for
     attaching structured source citations from the chunk metadata.
     """
+    redis_client = get_redis_client()
+    if redis_client is not None:
+        cache_key = "llm:answer:v1:" + hashlib.sha256(query.strip().lower().encode("utf-8")).hexdigest()
+        cached_answer = await redis_client.get(cache_key)
+        if cached_answer is not None:
+            logger.info("Cache hit for exact LLM query: %s", query)
+            return cached_answer
+
     context_block = _format_context(chunks)
 
     user_message = f"""Context:
@@ -86,7 +145,11 @@ Recruiter question: {query}"""
             temperature=0.3,  # low temperature: this is a factual-grounding task, not creative writing
             max_tokens=400,
         )
-        return response.choices[0].message.content.strip()
+        answer = response.choices[0].message.content.strip()
+        if redis_client is not None:
+            # TODO: replace this exact-match lookup with semantic similarity later.
+            await redis_client.set(cache_key, answer, ex=86400)
+        return answer
     except Exception:
         logger.exception("Groq completion failed for query: %s", query)
         return (

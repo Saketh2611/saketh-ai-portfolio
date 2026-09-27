@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # --- Cohere ---
     cohere_api_key: str
 
+    # --- Redis / cache ---
+    upstash_redis_rest_url: str | None = None
+    upstash_redis_rest_token: str | None = None
+
     # --- Auth ---
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
