@@ -12,6 +12,7 @@ portfolio" look worse than a static one.
 import hashlib
 import json
 import logging
+import time
 from urllib.parse import quote
 
 import httpx
@@ -59,20 +60,29 @@ class UpstashRedisClient:
 
     async def get(self, key: str) -> str | None:
         headers = {"Authorization": f"Bearer {self.token}"}
+        started_at = time.perf_counter()
         logger.info("Redis cache GET start", extra={"key": key, "redis_action": "get"})
-        response = await httpx.AsyncClient(timeout=10.0).get(
-            f"{self.url}/get/{quote(key, safe='')}",
-            headers=headers,
-        )
-        response.raise_for_status()
-        payload = response.json()
+        try:
+            response = await httpx.AsyncClient(timeout=10.0).get(
+                f"{self.url}/get/{quote(key, safe='')}",
+                headers=headers,
+            )
+            response.raise_for_status()
+            payload = response.json()
+        except Exception:
+            logger.exception(
+                "Redis cache GET failed after %.2f ms",
+                (time.perf_counter() - started_at) * 1000,
+            )
+            raise
 
         if isinstance(payload, dict):
             result = payload.get("result")
             value = _as_cached_answer(result)
             if value is not None:
                 logger.info(
-                    "Redis cache HIT",
+                    "Redis cache HIT in %.2f ms",
+                    (time.perf_counter() - started_at) * 1000,
                     extra={"key": key, "redis_action": "get", "value_length": len(value)},
                 )
                 return value
@@ -80,12 +90,17 @@ class UpstashRedisClient:
             value = _as_cached_answer(payload.get("value"))
             if value is not None:
                 logger.info(
-                    "Redis cache HIT",
+                    "Redis cache HIT in %.2f ms",
+                    (time.perf_counter() - started_at) * 1000,
                     extra={"key": key, "redis_action": "get", "value_length": len(value)},
                 )
                 return value
 
-        logger.info("Redis cache MISS", extra={"key": key, "redis_action": "get"})
+        logger.info(
+            "Redis cache MISS in %.2f ms",
+            (time.perf_counter() - started_at) * 1000,
+            extra={"key": key, "redis_action": "get"},
+        )
         return None
 
     async def set(self, key: str, value: str, *, ex: int | None = None) -> None:
@@ -93,18 +108,30 @@ class UpstashRedisClient:
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "text/plain",
         }
+        started_at = time.perf_counter()
         logger.info(
             "Redis cache SET start",
             extra={"key": key, "redis_action": "set", "ttl_seconds": ex, "value_length": len(value)},
         )
-        response = await httpx.AsyncClient(timeout=10.0).post(
-            f"{self.url}/set/{quote(key, safe='')}",
-            headers=headers,
-            params={"EX": ex} if ex is not None else None,
-            content=value,
+        try:
+            response = await httpx.AsyncClient(timeout=10.0).post(
+                f"{self.url}/set/{quote(key, safe='')}",
+                headers=headers,
+                params={"EX": ex} if ex is not None else None,
+                content=value,
+            )
+            response.raise_for_status()
+        except Exception:
+            logger.exception(
+                "Redis cache SET failed after %.2f ms",
+                (time.perf_counter() - started_at) * 1000,
+            )
+            raise
+        logger.info(
+            "Redis cache SET succeeded in %.2f ms",
+            (time.perf_counter() - started_at) * 1000,
+            extra={"key": key, "redis_action": "set", "ttl_seconds": ex},
         )
-        response.raise_for_status()
-        logger.info("Redis cache SET success", extra={"key": key, "redis_action": "set", "ttl_seconds": ex})
 
 
 def get_groq_client() -> AsyncGroq:
@@ -200,6 +227,7 @@ Recruiter question: {query}"""
         },
     )
 
+    groq_started_at = time.perf_counter()
     try:
         response = await client.chat.completions.create(
             model=settings.groq_model,
@@ -212,7 +240,8 @@ Recruiter question: {query}"""
         )
         answer = response.choices[0].message.content.strip()
         logger.info(
-            "Groq response received",
+            "Groq response received in %.2f ms",
+            (time.perf_counter() - groq_started_at) * 1000,
             extra={
                 "model": settings.groq_model,
                 "query_preview": query[:200],
@@ -227,7 +256,8 @@ Recruiter question: {query}"""
         return answer
     except Exception:
         logger.exception(
-            "Groq completion failed",
+            "Groq completion failed after %.2f ms",
+            (time.perf_counter() - groq_started_at) * 1000,
             extra={"query_preview": query[:200], "cache_key": cache_key, "model": settings.groq_model},
         )
         return (
