@@ -35,14 +35,41 @@ class UpstashRedisClient:
 
     async def get(self, key: str) -> str | None:
         headers = {"Authorization": f"Bearer {self.token}"}
+        logger.info("Redis cache GET start", extra={"key": key, "redis_action": "get"})
         response = await httpx.AsyncClient(timeout=10.0).get(
             f"{self.url}/get/{quote(key, safe='')}",
             headers=headers,
         )
         response.raise_for_status()
         payload = response.json()
-        value = payload.get("result")
-        return value if isinstance(value, str) else None
+
+        if isinstance(payload, dict):
+            result = payload.get("result")
+            if isinstance(result, dict):
+                value = result.get("value")
+                if isinstance(value, str):
+                    logger.info(
+                        "Redis cache HIT",
+                        extra={"key": key, "redis_action": "get", "value_length": len(value)},
+                    )
+                    return value
+            elif isinstance(result, str):
+                logger.info(
+                    "Redis cache HIT",
+                    extra={"key": key, "redis_action": "get", "value_length": len(result)},
+                )
+                return result
+
+            value = payload.get("value")
+            if isinstance(value, str):
+                logger.info(
+                    "Redis cache HIT",
+                    extra={"key": key, "redis_action": "get", "value_length": len(value)},
+                )
+                return value
+
+        logger.info("Redis cache MISS", extra={"key": key, "redis_action": "get"})
+        return None
 
     async def set(self, key: str, value: str, *, ex: int | None = None) -> None:
         payload: dict[str, object] = {"value": value}
@@ -53,12 +80,17 @@ class UpstashRedisClient:
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
         }
+        logger.info(
+            "Redis cache SET start",
+            extra={"key": key, "redis_action": "set", "ttl_seconds": ex, "value_length": len(value)},
+        )
         response = await httpx.AsyncClient(timeout=10.0).post(
             f"{self.url}/set/{quote(key, safe='')}",
             headers=headers,
             json=payload,
         )
         response.raise_for_status()
+        logger.info("Redis cache SET success", extra={"key": key, "redis_action": "set", "ttl_seconds": ex})
 
 
 def get_groq_client() -> AsyncGroq:
@@ -119,12 +151,22 @@ async def generate_answer(query: str, chunks: list[RetrievedChunk]) -> str:
     attaching structured source citations from the chunk metadata.
     """
     redis_client = get_redis_client()
+    cache_key = None
     if redis_client is not None:
         cache_key = "llm:answer:v1:" + hashlib.sha256(query.strip().lower().encode("utf-8")).hexdigest()
+        logger.info(
+            "LLM cache lookup",
+            extra={"query_preview": query[:200], "cache_key": cache_key, "chunk_count": len(chunks)},
+        )
         cached_answer = await redis_client.get(cache_key)
         if cached_answer is not None:
-            logger.info("Cache hit for exact LLM query: %s", query)
+            logger.info(
+                "LLM cache hit",
+                extra={"query_preview": query[:200], "cache_key": cache_key, "answer_length": len(cached_answer)},
+            )
             return cached_answer
+
+        logger.info("LLM cache miss", extra={"query_preview": query[:200], "cache_key": cache_key})
 
     context_block = _format_context(chunks)
 
@@ -134,6 +176,15 @@ async def generate_answer(query: str, chunks: list[RetrievedChunk]) -> str:
 Recruiter question: {query}"""
 
     client = get_groq_client()
+    logger.info(
+        "Groq request start",
+        extra={
+            "model": settings.groq_model,
+            "query_preview": query[:200],
+            "context_chunk_count": len(chunks),
+            "cache_key": cache_key,
+        },
+    )
 
     try:
         response = await client.chat.completions.create(
@@ -146,12 +197,25 @@ Recruiter question: {query}"""
             max_tokens=400,
         )
         answer = response.choices[0].message.content.strip()
+        logger.info(
+            "Groq response received",
+            extra={
+                "model": settings.groq_model,
+                "query_preview": query[:200],
+                "answer_length": len(answer),
+                "cache_key": cache_key,
+            },
+        )
         if redis_client is not None:
             # TODO: replace this exact-match lookup with semantic similarity later.
             await redis_client.set(cache_key, answer, ex=86400)
+            logger.info("Groq answer cached", extra={"cache_key": cache_key, "ttl_seconds": 86400})
         return answer
     except Exception:
-        logger.exception("Groq completion failed for query: %s", query)
+        logger.exception(
+            "Groq completion failed",
+            extra={"query_preview": query[:200], "cache_key": cache_key, "model": settings.groq_model},
+        )
         return (
             "Sorry, I'm having trouble generating an answer right now. "
             "Please try again in a moment, or reach out to Saketh directly."
