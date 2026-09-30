@@ -94,6 +94,19 @@ docker run -p 8000:8000 --env-file .env saketh-ai-backend
 Set the same env vars from `.env` in your host's environment/secrets
 panel — do not commit `.env` to git (it's in `.gitignore`).
 
+### Vercel
+
+Create a Vercel project with `backend/` as its Root Directory. Vercel
+detects the FastAPI app in `app/main.py` and installs dependencies from
+`requirements.txt`; no Dockerfile or custom build command is needed.
+
+Add these environment variables in the Vercel project settings:
+`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+`GROQ_API_KEY`, `COHERE_API_KEY`, `JWT_SECRET_KEY`, and `ADMIN_PASSWORD`.
+Set `CORS_ORIGINS` to the deployed frontend origin and
+`ENVIRONMENT=production`. Apply `migrations/001_initial_schema.sql` to
+the Supabase database before deploying.
+
 **Cold start note:** BGE-M3 loads at startup (see `main.py` lifespan).
 On a free-tier host that spins down on idle, the first request after a
 cold start will take longer while the model reloads. If this matters for
