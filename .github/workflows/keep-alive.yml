@@ -1,4 +1,4 @@
-name: Keep Render Backend Alive
+name: Keep Vercel Backend Alive
 
 on:
   schedule:
@@ -10,5 +10,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping Render backend
-        run: curl -f https://saketh-ai.onrender.com/health
+      - name: Ping Vercel backend
+        run: curl -f https://saketh-ai-portfolio-be.vercel.app/health
